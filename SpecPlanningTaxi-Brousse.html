@@ -1,0 +1,1350 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Spec Planning Taxi-Brousse</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&family=Sora:wght@700;800&display=swap">
+
+<style>
+/* ── Tokens ──────────────────────────────────────────────── */
+/* Layout: two-column on desktop (TOC | content), single on mobile */
+:root {
+  --bg:      #0F1117;
+  --surface: #171B27;
+  --card:    #1E2436;
+  --border:  #2A3050;
+  --fg:      #E8EAF2;
+  --muted:   #7A82A6;
+  --accent:  #4F7EFF;
+  --accent2: #34D399;
+  --warn:    #FB923C;
+  --danger:  #F87171;
+
+  --ff-display: 'Sora', sans-serif;
+  --ff-body:    'Inter', sans-serif;
+  --ff-mono:    'IBM Plex Mono', monospace;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg:      #F5F6FA;
+    --surface: #FFFFFF;
+    --card:    #EAECF6;
+    --border:  #D2D7EE;
+    --fg:      #12172E;
+    --muted:   #5C648A;
+    --accent:  #2B5CE6;
+    --accent2: #059669;
+    --warn:    #D97706;
+    --danger:  #DC2626;
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg:      #F5F6FA;
+  --surface: #FFFFFF;
+  --card:    #EAECF6;
+  --border:  #D2D7EE;
+  --fg:      #12172E;
+  --muted:   #5C648A;
+  --accent:  #2B5CE6;
+  --accent2: #059669;
+  --warn:    #D97706;
+  --danger:  #DC2626;
+  color-scheme: light;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--ff-body);
+  font-size: 15px;
+  line-height: 1.7;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0;
+}
+
+/* ── Layout ─────────────────────────────────────────── */
+.layout {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 0 40px;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .layout { grid-template-columns: 1fr; }
+  .toc-wrap { display: none; }
+}
+
+/* ── TOC ─────────────────────────────────────────────── */
+.toc-wrap {
+  position: sticky;
+  top: 28px;
+  padding: 28px 0 28px;
+}
+.toc {
+  border-left: 2px solid var(--border);
+  padding-left: 14px;
+}
+.toc-title {
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.toc a {
+  display: block;
+  font-size: 12.5px;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 3px 0;
+  transition: color 0.15s;
+  line-height: 1.4;
+}
+.toc a:hover { color: var(--accent); }
+.toc a.sub { padding-left: 12px; font-size: 11.5px; }
+
+/* ── Main ─────────────────────────────────────────────── */
+.main {
+  padding: 36px 0 80px;
+  min-width: 0;
+}
+
+/* ── Page header ─────────────────────────────────────── */
+.page-header {
+  margin-bottom: 40px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 28px;
+}
+.eyebrow {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+h1 {
+  font-family: var(--ff-display);
+  font-size: clamp(26px, 5vw, 38px);
+  font-weight: 800;
+  line-height: 1.1;
+  margin: 0 0 12px;
+  text-wrap: balance;
+}
+.page-desc {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 0;
+}
+.file-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-family: var(--ff-mono);
+  font-size: 11.5px;
+  color: var(--accent2);
+  margin-top: 12px;
+}
+
+/* ── Sections ─────────────────────────────────────────── */
+section {
+  margin-bottom: 52px;
+}
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.section-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+h2 {
+  font-family: var(--ff-display);
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--fg);
+}
+h3 {
+  font-family: var(--ff-body);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin: 20px 0 8px;
+}
+p { margin: 0 0 12px; }
+
+/* ── Cards & grids ───────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  margin-bottom: 10px;
+}
+.card-title {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--fg);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-desc {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+@media (max-width: 580px) {
+  .grid-2 { grid-template-columns: 1fr; }
+}
+
+/* ── Code blocks ─────────────────────────────────────── */
+pre {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  overflow-x: auto;
+  font-family: var(--ff-mono);
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--fg);
+  margin: 0 0 12px;
+}
+code {
+  font-family: var(--ff-mono);
+  font-size: 12px;
+  background: var(--card);
+  padding: 2px 5px;
+  border-radius: 4px;
+  color: var(--accent2);
+}
+pre code { background: none; padding: 0; font-size: inherit; color: inherit; }
+
+/* ── Tables ─────────────────────────────────────────── */
+.table-wrap { overflow-x: auto; margin-bottom: 12px; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+th {
+  text-align: left;
+  padding: 8px 12px;
+  background: var(--card);
+  border-bottom: 2px solid var(--border);
+  font-weight: 600;
+  color: var(--muted);
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  line-height: 1.5;
+}
+tr:last-child td { border-bottom: none; }
+td code { font-size: 11.5px; }
+
+/* ── Chips ────────────────────────────────────────────── */
+.chip {
+  display: inline-block;
+  padding: 2px 9px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  margin: 2px;
+}
+.chip-blue  { background: #4F7EFF22; color: var(--accent); }
+.chip-green { background: #34D39922; color: var(--accent2); }
+.chip-warn  { background: #FB923C22; color: var(--warn); }
+.chip-red   { background: #F8717122; color: var(--danger); }
+.chip-grey  { background: var(--card); color: var(--muted); }
+
+/* ── Divider ─────────────────────────────────────────── */
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 28px 0;
+}
+
+/* ── Step list ────────────────────────────────────────── */
+.steps { list-style: none; padding: 0; margin: 0 0 12px; }
+.steps li {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 13.5px;
+  color: var(--fg);
+}
+.step-n {
+  flex-shrink: 0;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Color dots ────────────────────────────────────────── */
+.color-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.color-item {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--muted);
+}
+.dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── Nav header ───────────────────────────────────────── */
+.nav-bar {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 10;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px max(16px, env(safe-area-inset-left, 0px));
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px);
+  z-index: 10;
+  background: var(--surface);
+}
+.nav-logo {
+  font-family: var(--ff-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+}
+.nav-sep { color: var(--border); }
+.nav-title {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Component diagram ─────────────────────────────────── */
+.comp-tree {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-family: var(--ff-mono);
+  font-size: 12px;
+  line-height: 2;
+  color: var(--fg);
+  overflow-x: auto;
+  margin-bottom: 12px;
+}
+.comp-tree .c-root { color: var(--accent); font-weight: 600; }
+.comp-tree .c-child { color: var(--accent2); }
+.comp-tree .c-leaf  { color: var(--muted); }
+
+/* ── Flow diagram ─────────────────────────────────────── */
+.flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.flow-box {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg);
+  white-space: nowrap;
+}
+.flow-box.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: #4F7EFF11;
+}
+.flow-arrow {
+  color: var(--muted);
+  font-size: 14px;
+}
+</style>
+
+<!-- Nav -->
+<div class="nav-bar">
+  <span class="nav-logo">TB</span>
+  <span class="nav-sep">/</span>
+  <span class="nav-title">Spec · Gestion du planning</span>
+</div>
+
+<div class="layout">
+
+  <!-- TOC -->
+  <aside class="toc-wrap">
+    <nav class="toc">
+      <div class="toc-title">Sommaire</div>
+      <a href="#overview">Vue d'ensemble</a>
+      <a href="#models">Modèles de données</a>
+      <a href="#constants">Constantes</a>
+      <a href="#helpers">Fonctions utilitaires</a>
+      <a href="#seed">Données seed</a>
+      <a href="#comp-router">CoopPlanning (routeur)</a>
+      <a href="#comp-calendar">MonthCalendarView</a>
+      <a href="#comp-day">DayDetailView</a>
+      <a href="#comp-vehicle">VehicleAssignModal</a>
+      <a href="#comp-addslot">AddSlotModal</a>
+      <a href="#comp-routebar">RouteFilterBar</a>
+      <a href="#comp-parking">ParkingView</a>
+      <a href="#comp-templates">TemplateManager</a>
+      <a href="#comp-tplform">TemplateForm</a>
+      <a href="#logic">Logique métier</a>
+      <a href="#navigation">Navigation & état</a>
+      <a href="#integration">Intégration globale</a>
+    </nav>
+  </aside>
+
+  <!-- Content -->
+  <main class="main">
+
+    <div class="page-header">
+      <div class="eyebrow">Spécification technique</div>
+      <h1>Gestion du planning coopérative</h1>
+      <p class="page-desc">Document de référence complet pour régénérer l'interface de planification des départs et l'affectation des véhicules à partir de zéro.</p>
+      <div class="file-badge">📄 app/screens-staff-planning.jsx · 1 362 lignes</div>
+    </div>
+
+    <!-- OVERVIEW -->
+    <section id="overview">
+      <div class="section-header">
+        <div class="section-icon">📐</div>
+        <h2>Vue d'ensemble</h2>
+      </div>
+
+      <p>Le module gère l'ensemble du cycle de planification d'une coopérative de taxi-brousse&nbsp;: création de templates hebdomadaires → génération automatique des <em>DepartureSlots</em> pour un mois entier → affectation manuelle des véhicules à chaque départ → consultation de l'état du parking au jour le jour.</p>
+
+      <p>Le fichier est <strong>auto-suffisant</strong>&nbsp;: il ne dépend que de <code>React</code> (exposé globalement via CDN Babel standalone) et des constantes globales <code>TYPE</code> (typographies) et de la palette <code>pal</code> passée en prop.</p>
+
+      <h3>Arborescence des composants</h3>
+      <div class="comp-tree">
+        <span class="c-root">CoopPlanning</span> (routeur principal)<br>
+        &nbsp;&nbsp;├─ <span class="c-child">MonthCalendarView</span><br>
+        &nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;└─ <span class="c-leaf">RouteFilterBar</span><br>
+        &nbsp;&nbsp;├─ <span class="c-child">DayDetailView</span><br>
+        &nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├─ <span class="c-leaf">RouteFilterBar</span><br>
+        &nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├─ <span class="c-leaf">VehicleAssignModal</span><br>
+        &nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;└─ <span class="c-leaf">AddSlotModal</span><br>
+        &nbsp;&nbsp;├─ <span class="c-child">ParkingView</span><br>
+        &nbsp;&nbsp;└─ <span class="c-child">TemplateManager</span><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ <span class="c-leaf">TemplateForm</span>
+      </div>
+
+      <h3>Vues et navigation</h3>
+      <div class="flow">
+        <div class="flow-box active">calendar</div>
+        <span class="flow-arrow">⇆</span>
+        <div class="flow-box">day</div>
+      </div>
+      <div class="flow">
+        <div class="flow-box active">calendar</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box">parking</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box active">calendar</div>
+      </div>
+      <div class="flow">
+        <div class="flow-box active">calendar</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box">templates (list)</div>
+        <span class="flow-arrow">→</span>
+        <div class="flow-box">templates (detail)</div>
+        <span class="flow-arrow">⇆</span>
+        <div class="flow-box">templates (form)</div>
+      </div>
+    </section>
+
+    <!-- DATA MODELS -->
+    <section id="models">
+      <div class="section-header">
+        <div class="section-icon">🗄</div>
+        <h2>Modèles de données</h2>
+      </div>
+
+      <h3>DepartureSlot</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Champ</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>id</code></td><td>string</td><td><code>"ds_&lt;timestamp&gt;"</code> — identifiant unique</td></tr>
+            <tr><td><code>coopId</code></td><td>string</td><td>Identifiant de la coopérative (ex. <code>"sonatra"</code>)</td></tr>
+            <tr><td><code>date</code></td><td>string</td><td>ISO date <code>"YYYY-MM-DD"</code></td></tr>
+            <tr><td><code>from</code></td><td>string</td><td>Ville de départ (parmi les 9 villes)</td></tr>
+            <tr><td><code>to</code></td><td>string</td><td>Ville d'arrivée (parmi les 9 villes)</td></tr>
+            <tr><td><code>durationMin</code></td><td>number</td><td>Durée du trajet en minutes</td></tr>
+            <tr><td><code>slot</code></td><td><code>'morning' | 'noon' | 'evening'</code></td><td>Créneau horaire</td></tr>
+            <tr><td><code>departureTime</code></td><td>string</td><td>Heure départ <code>"HH:MM"</code></td></tr>
+            <tr><td><code>arrivalTime</code></td><td>string</td><td>Calculé = <code>departureTime + durationMin</code></td></tr>
+            <tr><td><code>status</code></td><td><code>'planned' | 'confirmed'</code></td><td>Statut du départ</td></tr>
+            <tr><td><code>templateId</code></td><td>string | null</td><td>ID du template source, ou null si ajouté manuellement</td></tr>
+            <tr><td><code>vehicleSlots</code></td><td>VehicleSlot[]</td><td>Liste des créneaux véhicule associés</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>VehicleSlot</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Champ</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>id</code></td><td>string</td><td><code>"vs_&lt;seq&gt;_&lt;i&gt;"</code></td></tr>
+            <tr><td><code>vehicleId</code></td><td>string | null</td><td>null = non assigné (placeholder)</td></tr>
+            <tr><td><code>status</code></td><td><code>'placeholder' | 'planned' | 'confirmed'</code></td><td>placeholder si vehicleId null</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>PlanTemplate</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Champ</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>id</code></td><td>string</td><td><code>"tpl_&lt;…&gt;"</code></td></tr>
+            <tr><td><code>coopId</code></td><td>string</td><td>Propriétaire du template</td></tr>
+            <tr><td><code>name</code></td><td>string</td><td>Nom affiché (ex. <code>"Standard Sonatra"</code>)</td></tr>
+            <tr><td><code>routes</code></td><td>RouteTemplate[]</td><td>Liste des itinéraires</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>RouteTemplate</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Champ</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>from</code></td><td>string</td><td>Ville de départ</td></tr>
+            <tr><td><code>to</code></td><td>string</td><td>Ville d'arrivée</td></tr>
+            <tr><td><code>durationMin</code></td><td>number</td><td>Durée en minutes</td></tr>
+            <tr><td><code>slots</code></td><td>SlotConfig[]</td><td>Créneaux et volumes</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>SlotConfig (dans un template)</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Champ</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>slot</code></td><td><code>'morning' | 'noon' | 'evening'</code></td><td>Créneau</td></tr>
+            <tr><td><code>time</code></td><td>string</td><td>Heure de départ <code>"HH:MM"</code></td></tr>
+            <tr><td><code>weekdayCount</code></td><td>number</td><td>Nb de véhicules en semaine</td></tr>
+            <tr><td><code>weekendCount</code></td><td>number</td><td>Nb de véhicules le week-end</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Vehicle (prop externe)</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Champ</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>id</code></td><td>string</td><td>Identifiant unique</td></tr>
+            <tr><td><code>coopId</code></td><td>string</td><td>Coopérative propriétaire</td></tr>
+            <tr><td><code>plate</code></td><td>string</td><td>Immatriculation affichée</td></tr>
+            <tr><td><code>driverName</code></td><td>string</td><td>Nom du chauffeur</td></tr>
+            <tr><td><code>seats</code></td><td>number</td><td>Capacité en places</td></tr>
+            <tr><td><code>active</code></td><td>boolean</td><td>Véhicule actif (filtrage)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- CONSTANTS -->
+    <section id="constants">
+      <div class="section-header">
+        <div class="section-icon">🎨</div>
+        <h2>Constantes</h2>
+      </div>
+
+      <h3>DEST_COLORS — couleurs par destination</h3>
+      <div class="color-row">
+        <div class="color-item"><div class="dot" style="background:#F59E0B"></div>Toamasina <code>#F59E0B</code></div>
+        <div class="color-item"><div class="dot" style="background:#10B981"></div>Antsirabe <code>#10B981</code></div>
+        <div class="color-item"><div class="dot" style="background:#3B82F6"></div>Mahajanga <code>#3B82F6</code></div>
+        <div class="color-item"><div class="dot" style="background:#7C3AED"></div>Fianarantsoa <code>#7C3AED</code></div>
+        <div class="color-item"><div class="dot" style="background:#EF4444"></div>Toliara <code>#EF4444</code></div>
+        <div class="color-item"><div class="dot" style="background:#F97316"></div>Antsiranana <code>#F97316</code></div>
+        <div class="color-item"><div class="dot" style="background:#EC4899"></div>Ambositra <code>#EC4899</code></div>
+        <div class="color-item"><div class="dot" style="background:#0891B2"></div>Morondava <code>#0891B2</code></div>
+        <div class="color-item"><div class="dot" style="background:#6B7280"></div>Autres <code>#6B7280</code></div>
+      </div>
+      <p>Helpers : <code>dColor(dest)</code> → couleur hex · <code>dBg(dest)</code> → couleur + <code>"22"</code> (opacité ~13%)</p>
+
+      <h3>SLOT_META — métadonnées des créneaux</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Clé</th><th>label</th><th>emoji</th><th>color</th><th>bg</th><th>border</th></tr></thead>
+          <tbody>
+            <tr><td><code>morning</code></td><td>Matin</td><td>🌅</td><td><code>#D97706</code></td><td><code>#FFFBEB</code></td><td><code>#FDE68A</code></td></tr>
+            <tr><td><code>noon</code></td><td>Midi</td><td>☀️</td><td><code>#0284C7</code></td><td><code>#F0F9FF</code></td><td><code>#BAE6FD</code></td></tr>
+            <tr><td><code>evening</code></td><td>Soir</td><td>🌆</td><td><code>#7C3AED</code></td><td><code>#FAF5FF</code></td><td><code>#DDD6FE</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Autres</h3>
+      <pre>SLOT_ORDER = ['morning', 'noon', 'evening']   // ordre d'affichage fixe
+
+CITIES = ['Antananarivo','Toamasina','Antsirabe','Mahajanga',
+          'Fianarantsoa','Toliara','Antsiranana','Ambositra','Morondava']
+
+TODAY = '2026-06-10'   // date courante codée en dur (MonthCalendarView)</pre>
+    </section>
+
+    <!-- HELPERS -->
+    <section id="helpers">
+      <div class="section-header">
+        <div class="section-icon">⚙️</div>
+        <h2>Fonctions utilitaires</h2>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title"><code>t2m(time)</code></div>
+          <p class="card-desc">Convertit <code>"HH:MM"</code> en minutes depuis minuit.<br>
+          <code>"06:30"</code> → <code>390</code></p>
+        </div>
+        <div class="card">
+          <div class="card-title"><code>m2t(minutes)</code></div>
+          <p class="card-desc">Minutes → <code>"HH:MM"</code>. Gère le dépassement minuit via <code>% 1440</code>.<br>
+          <code>1500</code> → <code>"01:00"</code></p>
+        </div>
+        <div class="card">
+          <div class="card-title"><code>addMinP(time, min)</code></div>
+          <p class="card-desc">Ajoute des minutes à une heure string.<br>
+          <code>addMinP("22:00", 270)</code> → <code>"02:30"</code></p>
+        </div>
+        <div class="card">
+          <div class="card-title"><code>slotsOverlap(dep1,arr1,dep2,arr2)</code></div>
+          <p class="card-desc">Détecte le chevauchement horaire entre deux créneaux. Si arrivée ≤ départ, ajoute 1440 (passage minuit). Retourne <code>boolean</code>.</p>
+        </div>
+        <div class="card">
+          <div class="card-title"><code>isoFmtP(iso)</code></div>
+          <p class="card-desc">Formate une date ISO en français.<br>
+          <code>"2026-06-09"</code> → <code>"9 Jun 2026"</code></p>
+        </div>
+        <div class="card">
+          <div class="card-title"><code>dowFrP(iso)</code></div>
+          <p class="card-desc">Jour de la semaine abrégé.<br>
+          <code>"2026-06-09"</code> → <code>"Mar"</code></p>
+        </div>
+        <div class="card">
+          <div class="card-title"><code>isWeekendP(iso)</code></div>
+          <p class="card-desc">Retourne <code>true</code> si samedi (6) ou dimanche (0). Utilise <code>T12:00:00</code> pour éviter les décalages UTC.</p>
+        </div>
+        <div class="card">
+          <div class="card-title"><code>fmtDurP(min)</code></div>
+          <p class="card-desc">Durée lisible.<br>
+          <code>270</code> → <code>"4h30"</code> · <code>120</code> → <code>"2h"</code></p>
+        </div>
+        <div class="card">
+          <div class="card-title"><code>buildMonthGridP(year, month)</code></div>
+          <p class="card-desc">Retourne un tableau de 35 ou 42 cases (null pour le rembourrage), premier jour = Lundi. Ex : si le 1er est un Mercredi, les 2 premières cases sont <code>null</code>.</p>
+        </div>
+        <div class="card">
+          <div class="card-title"><code>genSlotsFromTpl(tpl, year, month)</code></div>
+          <p class="card-desc">Génère tous les <em>DepartureSlots</em> d'un mois depuis un template. Distingue semaine / week-end pour le nombre de véhicules. Calcule <code>arrivalTime</code> automatiquement.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SEED DATA -->
+    <section id="seed">
+      <div class="section-header">
+        <div class="section-icon">🌱</div>
+        <h2>Données seed</h2>
+      </div>
+
+      <p>Le fichier crée et expose deux variables globales&nbsp;:</p>
+      <pre>window.SEED_PLAN_TEMPLATES  // [PlanTemplate]
+window.SEED_PLAN_SLOTS      // [DepartureSlot] — juin 2026 pré-générés</pre>
+
+      <h3>Template inclus : <code>tpl_sonatra_std</code></h3>
+      <div class="card">
+        <div class="card-title">Standard Sonatra · coopId: "sonatra"</div>
+        <div class="table-wrap" style="margin-top:8px">
+          <table>
+            <thead><tr><th>Route</th><th>Durée</th><th>Créneau</th><th>Heure</th><th>Sem.</th><th>W-E</th></tr></thead>
+            <tbody>
+              <tr><td>Tana → Toamasina</td><td>270 min</td><td>🌅 Matin</td><td>06:00</td><td>2</td><td>3</td></tr>
+              <tr><td>Tana → Toamasina</td><td>270 min</td><td>☀️ Midi</td><td>12:00</td><td>1</td><td>2</td></tr>
+              <tr><td>Tana → Antsirabe</td><td>120 min</td><td>🌅 Matin</td><td>07:30</td><td>1</td><td>2</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <h3>Pré-assignations véhicules</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Route</th><th>Créneau</th><th>Véhicule(s)</th><th>Statut</th></tr></thead>
+          <tbody>
+            <tr><td>2026-06-09</td><td>→ Toamasina</td><td>Matin</td><td>v1 (slot 0), v2 (slot 1)</td><td>confirmed / planned</td></tr>
+            <tr><td>2026-06-10</td><td>→ Toamasina</td><td>Matin</td><td>v1 (slot 0)</td><td>planned</td></tr>
+            <tr><td>2026-06-11</td><td>→ Antsirabe</td><td>Matin</td><td>v2 (slot 0)</td><td>planned</td></tr>
+            <tr><td>2026-06-14</td><td>→ Toamasina</td><td>Matin</td><td>v1 (slot 0)</td><td>confirmed</td></tr>
+            <tr><td>2026-06-14</td><td>→ Antsirabe</td><td>Matin</td><td>v2 (slot 0)</td><td>planned</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- COOOPLANNING -->
+    <section id="comp-router">
+      <div class="section-header">
+        <div class="section-icon" style="background:var(--accent2)">🗂</div>
+        <h2>CoopPlanning — routeur principal</h2>
+      </div>
+
+      <h3>Props</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Prop</th><th>Type</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>pal</code></td><td>object</td><td>Palette de couleurs (primary, bg, surface, ink, muted, line)</td></tr>
+            <tr><td><code>t</code></td><td>function</td><td>Fonction de traduction i18n (non utilisée dans ce module)</td></tr>
+            <tr><td><code>lang</code></td><td>string</td><td>Code langue</td></tr>
+            <tr><td><code>currentUser</code></td><td>object</td><td>Utilisateur connecté — <code>coopId</code> et <code>name</code> utilisés</td></tr>
+            <tr><td><code>vehicles</code></td><td>Vehicle[]</td><td>Flotte complète (filtrée par coopId en interne)</td></tr>
+            <tr><td><code>reservations</code></td><td>Reservation[]</td><td>Réservations pour calcul pax</td></tr>
+            <tr><td><code>planningSlots</code></td><td>DepartureSlot[]</td><td>État partagé — tous les slots</td></tr>
+            <tr><td><code>setPlanningSlots</code></td><td>function</td><td>Setter React (fonctionnel <code>prev =&gt; …</code>)</td></tr>
+            <tr><td><code>planTemplates</code></td><td>PlanTemplate[]</td><td>État partagé — tous les templates</td></tr>
+            <tr><td><code>setPlanTemplates</code></td><td>function</td><td>Setter React</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>État interne</h3>
+      <pre>view:     'calendar' | 'day' | 'parking' | 'templates'  (défaut: 'calendar')
+selDate:  string | null    // date ISO sélectionnée pour la vue day
+calYear:  number           // défaut 2026
+calMonth: number           // défaut 6</pre>
+
+      <h3>Logique de routage</h3>
+      <ul class="steps">
+        <li><div class="step-n">1</div><span><code>view === 'day' && selDate</code> → render <strong>DayDetailView</strong></span></li>
+        <li><div class="step-n">2</div><span><code>view === 'parking'</code> → render <strong>ParkingView</strong></span></li>
+        <li><div class="step-n">3</div><span><code>view === 'templates'</code> → render <strong>TemplateManager</strong></span></li>
+        <li><div class="step-n">4</div><span>Sinon → render <strong>MonthCalendarView</strong> + barre d'actions sticky en bas</span></li>
+      </ul>
+
+      <h3>Barre d'actions (bas, sticky — vue calendrier uniquement)</h3>
+      <div class="card">
+        <div class="card-desc">
+          <strong>🅿️ Parking</strong> — background <code>#1E40AF</code>, ouvre <code>view='parking'</code><br>
+          <strong>📋 Templates</strong> — background <code>#059669</code>, ouvre <code>view='templates'</code><br>
+          Position : <code>sticky; bottom: 0</code>, bordure top, padding <code>10px 14px 16px</code>, flex row, gap 8
+        </div>
+      </div>
+
+      <h3>handleChangeMonth(dir)</h3>
+      <p>Gère les débordements de mois&nbsp;: décembre + 1 → janvier année+1, janvier - 1 → décembre année-1.</p>
+    </section>
+
+    <!-- MONTH CALENDAR -->
+    <section id="comp-calendar">
+      <div class="section-header">
+        <div class="section-icon" style="background:#7C3AED">📅</div>
+        <h2>MonthCalendarView</h2>
+      </div>
+
+      <h3>Props</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Prop</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>pal, coopId, year, month</code></td><td>Contexte</td></tr>
+            <tr><td><code>slots</code></td><td>Tous les DepartureSlots</td></tr>
+            <tr><td><code>vehicles</code></td><td>Véhicules filtrés par coopId (déjà filtré par CoopPlanning)</td></tr>
+            <tr><td><code>reservations</code></td><td>Pour calcul pax</td></tr>
+            <tr><td><code>onSelectDay(date)</code></td><td>Callback clic sur une cellule</td></tr>
+            <tr><td><code>onChangeMonth(dir)</code></td><td>Callback navigation mois</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>État interne</h3>
+      <pre>selRoute: null | "from|to"   // filtre actif (null = tous)</pre>
+
+      <h3>Header (fond pal.primary)</h3>
+      <div class="card">
+        <div class="card-desc">
+          Titre : <strong>📅 Planning mensuel</strong> (font display, 18px)<br>
+          Navigation mois : boutons <code>‹</code> / <code>›</code>, fond <code>rgba(255,255,255,0.2)</code>, radius 8<br>
+          Titre mois : <em>Janvier … Décembre</em> + année (font display, 16px)<br><br>
+          <strong>3 KPI chips</strong> (fond <code>rgba(255,255,255,0.15)</code>, radius 10) :<br>
+          · Départs : nombre de slots filtrés du mois<br>
+          · Véhicules : <code>assignés/total</code><br>
+          · Destinations : nombre de destinations uniques
+        </div>
+      </div>
+
+      <h3>Grille 7 colonnes (Lun → Dim)</h3>
+      <p>En-têtes : <code>['Lun','Mar','Mer','Jeu','Ven','Sam','Dim']</code> — Sam/Dim en <code>#7C3AED</code>. Cellules générées par <code>buildMonthGridP</code>.</p>
+
+      <h3>Cellule de jour</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Condition</th><th>Style</th></tr></thead>
+          <tbody>
+            <tr><td>Aujourd'hui (<code>date === TODAY</code>)</td><td>fond <code>pal.primary</code>, texte blanc, border primary</td></tr>
+            <tr><td>Passé sans données</td><td>fond <code>pal.bg</code>, opacité 0.5</td></tr>
+            <tr><td>Avec données</td><td>fond <code>pal.surface</code>, border opaque</td></tr>
+            <tr><td>Week-end</td><td>numéro en <code>#7C3AED</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Contenu de chaque cellule (de haut en bas)&nbsp;:</p>
+      <ol>
+        <li>Numéro du jour (12px bold)</li>
+        <li>Points colorés destinations (6×6, radius 3) — max 4, puis <code>+N</code></li>
+        <li><code>assignés/total 🚌</code> (9px)</li>
+        <li><code>N 👤</code> passagers si pax &gt; 0 (9px)</li>
+      </ol>
+
+      <h3>Légende</h3>
+      <p>Affichée uniquement si <code>!selRoute</code>. Cards sur fond <code>pal.surface</code>, clic sur un item active le filtre de route.</p>
+
+      <h3>dayStats (useMemo)</h3>
+      <pre>stats[date] = {
+  total:    nb total de vehicleSlots,
+  assigned: nb avec vehicleId non null,
+  dests:    Set des destinations,
+  cap:      somme des seats des véhicules assignés,
+  pax:      passagers (calculés depuis reservations)
+}</pre>
+      <p>Les réservations ont leur date au format <code>"DD/MM/YYYY"</code> — conversion en ISO nécessaire pour la comparaison.</p>
+    </section>
+
+    <!-- DAY DETAIL -->
+    <section id="comp-day">
+      <div class="section-header">
+        <div class="section-icon" style="background:var(--accent)">📋</div>
+        <h2>DayDetailView</h2>
+      </div>
+
+      <h3>Props</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Prop</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>pal, date, coopId</code></td><td>Contexte</td></tr>
+            <tr><td><code>allSlots</code></td><td>Tous les slots (non filtrés par coopId)</td></tr>
+            <tr><td><code>vehicles</code></td><td>Véhicules de la coop</td></tr>
+            <tr><td><code>reservations</code></td><td>Pour calcul occupation</td></tr>
+            <tr><td><code>onBack()</code></td><td>Retour au calendrier</td></tr>
+            <tr><td><code>onUpdateSlots(updater)</code></td><td>Setter fonctionnel des slots</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>État interne</h3>
+      <pre>assignModal: null | { dsId, vsIndex, ds }
+addModal:    boolean
+delConfirm:  null | dsId
+selRoute:    null | "from|to"</pre>
+
+      <h3>Header (fond pal.primary)</h3>
+      <div class="card">
+        <div class="card-desc">
+          Bouton <strong>← Calendrier</strong> (fond rgba 20%, radius 8, 12px)<br>
+          Titre : <code>dowFrP(date) + isoFmtP(date)</code>, badge <em>Week-end</em> si applicable<br><br>
+          <strong>3 KPI chips</strong> (identiques à MonthCalendar)&nbsp;:<br>
+          · Départs : <code>allDaySlots.length</code> (sans filtre route)<br>
+          · Véhicules : <code>assignedVeh/totalVeh</code><br>
+          · Passagers : somme des seats des réservations de la journée
+        </div>
+      </div>
+
+      <h3>Rendu des créneaux</h3>
+      <p>Groupés par <code>SLOT_ORDER</code> (<code>bySlot</code>). Pour chaque créneau :</p>
+      <div class="card">
+        <div class="card-desc">
+          <strong>Header créneau</strong> : fond <code>sm.bg</code>, border-bottom <code>sm.border</code> (2px), radius <code>12px 12px 0 0</code><br>
+          Titre : <code>sm.emoji + sm.label</code> en <code>sm.color</code><br>
+          Compteur : <code>N départ(s)</code> à droite<br><br>
+          Si vide : message <em>"Aucun départ planifié"</em> sur fond surface<br><br>
+          <strong>Carte de départ</strong> (dernier : radius <code>0 0 12px 12px</code>, autres radius 0) :<br>
+          1. Badge route : <code>from[0:3]→to</code> (couleur destination), horaire, durée<br>
+          2. Bouton ✕ (rouge <code>#EF4444</code>) → <code>setDelConfirm(ds.id)</code><br>
+          3. Barre d'occupation (si <code>totalCap > 0</code>) — couleur selon seuil : &gt;85% rouge, &gt;60% orange, sinon <code>pal.primary</code><br>
+          4. Chips véhicules (voir ci-dessous)
+        </div>
+      </div>
+
+      <h3>Chip véhicule</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>État</th><th>Border</th><th>Background</th><th>Texte</th></tr></thead>
+          <tbody>
+            <tr><td>Confirmé</td><td><code>pal.primary</code> (2px)</td><td><code>pal.primary + "11"</code></td><td>plaque + <code>driver[0:1]·seated/cap 👤</code></td></tr>
+            <tr><td>Planifié</td><td><code>#D97706</code></td><td><code>#FFFBEB</code></td><td>plaque en <code>#B45309</code></td></tr>
+            <tr><td>Non assigné</td><td><code>pal.line</code></td><td><code>pal.bg</code></td><td><code>"+ Véhicule N"</code> + <code>"Assigner →"</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Clic → ouvre <code>VehicleAssignModal</code>. Bouton <code>+ Veh.</code> (dashed) → <code>handleAddVehicleSlot</code>.</p>
+
+      <h3>Confirmation suppression</h3>
+      <p>Overlay centré (backdrop 50%), carte blanche, message + boutons Annuler / Supprimer (rouge). Irréversible.</p>
+
+      <h3>Bouton "Ajouter un départ"</h3>
+      <p>Fond <code>pal.primary + "15"</code>, border dashed primary, radius 12, ouvre <code>AddSlotModal</code>.</p>
+    </section>
+
+    <!-- VEHICLE ASSIGN MODAL -->
+    <section id="comp-vehicle">
+      <div class="section-header">
+        <div class="section-icon" style="background:#D97706">🚌</div>
+        <h2>VehicleAssignModal</h2>
+      </div>
+
+      <p>Bottom sheet (slide from bottom). Overlay <code>rgba(0,0,0,0.55)</code>, clic extérieur ferme. Panneau blanc, radius <code>20px 20px 0 0</code>, maxHeight 82%.</p>
+
+      <h3>Props</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Prop</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>pal</code></td><td>Palette</td></tr>
+            <tr><td><code>vehicles</code></td><td>Véhicules actifs de la coop</td></tr>
+            <tr><td><code>departureSlot</code></td><td>DepartureSlot concerné</td></tr>
+            <tr><td><code>vsIndex</code></td><td>Index dans vehicleSlots</td></tr>
+            <tr><td><code>allSlots</code></td><td>Pour détection conflits</td></tr>
+            <tr><td><code>onAssign(vehicleId | null)</code></td><td>Callback confirmation</td></tr>
+            <tr><td><code>onClose()</code></td><td>Callback fermeture</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>État</h3>
+      <pre>sel: vehicleId | null   // sélection courante (pré-initialisée avec l'assignation actuelle)</pre>
+
+      <h3>Handle</h3>
+      <p>Barre grise 40×4px centrée en haut du panneau (indicateur de bottom sheet).</p>
+
+      <h3>Header</h3>
+      <p><em>"Assigner un véhicule"</em>, badge créneau, route, horaire départ/arrivée.</p>
+
+      <h3>Bouton "Retirer l'assignation"</h3>
+      <p>Pleine largeur, fond transparent, border <code>pal.line</code>, appelle <code>onAssign(null)</code>.</p>
+
+      <h3>Liste véhicules actifs</h3>
+      <p>Filtre : <code>vehicles.filter(v => v.active)</code>. Pour chaque véhicule :</p>
+      <div class="card">
+        <div class="card-desc">
+          <strong>getConflict(vId)</strong> — cherche si ce véhicule est déjà assigné le même jour à un autre slot qui chevauche temporellement (<code>slotsOverlap</code>). Retourne une string descriptive ou null.<br><br>
+          <strong>Si conflit</strong> : border rouge <code>#FCA5A5</code>, fond <code>#FFF5F5</code>, opacité 0.65, cursor <code>not-allowed</code>, warning ⚠ en rouge<br>
+          <strong>Si sélectionné</strong> : border <code>pal.primary</code> (2px), fond <code>pal.primary + "11"</code><br>
+          <strong>Radio</strong> : cercle 22×22, border 2px, point blanc 8×8 si sélectionné<br>
+          Contenu : plaque 🚌, badge <em>"• actuel"</em> si c'est l'assignation en cours, driver · seats
+        </div>
+      </div>
+
+      <h3>Bouton "Confirmer l'assignation"</h3>
+      <p>Visible uniquement si <code>sel !== null</code>. Fond <code>pal.primary</code>, pleine largeur, appelle <code>onAssign(sel)</code>.</p>
+    </section>
+
+    <!-- ADD SLOT MODAL -->
+    <section id="comp-addslot">
+      <div class="section-header">
+        <div class="section-icon" style="background:var(--accent2)">➕</div>
+        <h2>AddSlotModal</h2>
+      </div>
+
+      <p>Bottom sheet identique à VehicleAssignModal, maxHeight 92%. Formulaire de création manuelle d'un départ.</p>
+
+      <h3>Props</h3>
+      <pre>pal, date, coopId, onAdd(DepartureSlot), onClose()</pre>
+
+      <h3>État</h3>
+      <pre>from:    'Antananarivo'   // ville départ
+to:      'Toamasina'      // ville arrivée
+slot:    'morning'        // créneau
+depTime: '06:00'          // heure départ
+durH:    4                // heures durée
+durM:    30               // minutes durée
+vCount:  1                // nombre de véhicules</pre>
+
+      <h3>Champs du formulaire</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Champ</th><th>Type UI</th><th>Notes</th></tr></thead>
+          <tbody>
+            <tr><td>DÉPART / DESTINATION</td><td>2 selects côte à côte</td><td>La destination filtre la ville de départ</td></tr>
+            <tr><td>CRÉNEAU</td><td>3 boutons (morning/noon/evening)</td><td>Sélection change aussi <code>depTime</code></td></tr>
+            <tr><td>HEURE DÉPART</td><td><code>input type="time"</code></td><td></td></tr>
+            <tr><td>DURÉE</td><td>2 inputs number (h + min)</td><td>min: step 15</td></tr>
+            <tr><td>Arrivée prévue</td><td>Readonly preview</td><td>Calculé en temps réel</td></tr>
+            <tr><td>NOMBRE DE VÉHICULES</td><td>Stepper − / + (1–40)</td><td>Pluriel automatique</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>handleAdd()</h3>
+      <p>Crée un DepartureSlot avec <code>id = "ds_" + Date.now()</code>, vehicleSlots vides (placeholder), <code>templateId: null</code>, appelle <code>onAdd</code> et ferme.</p>
+    </section>
+
+    <!-- ROUTE FILTER BAR -->
+    <section id="comp-routebar">
+      <div class="section-header">
+        <div class="section-icon" style="background:#0891B2">🔍</div>
+        <h2>RouteFilterBar</h2>
+      </div>
+
+      <p>Barre de filtrage réutilisée dans MonthCalendarView et DayDetailView. <strong>N'est pas rendue si routes.length &lt; 2.</strong></p>
+
+      <h3>Props</h3>
+      <pre>pal, routes: [{from, to}], selRoute: null|"from|to", onSelect(key|null)</pre>
+
+      <h3>Layout</h3>
+      <p>Scroll horizontal, flex row, gap 6, padding <code>8px 12px</code>, fond <code>pal.surface</code>, border-bottom.</p>
+
+      <h3>Chip "Tous"</h3>
+      <p>Sélectionné si <code>!selRoute</code> → fond <code>pal.primary</code>, texte blanc. Sinon transparent avec border <code>pal.line</code>.</p>
+
+      <h3>Chips de route</h3>
+      <p>Clé : <code>"from|to"</code>. Couleur : <code>dColor(to)</code>. Dot coloré 7×7 + texte <code>"from[0:3] → to"</code>. Clic sur chip actif → déselectionne (<code>onSelect(null)</code>).</p>
+    </section>
+
+    <!-- PARKING VIEW -->
+    <section id="comp-parking">
+      <div class="section-header">
+        <div class="section-icon" style="background:#1E40AF">🅿️</div>
+        <h2>ParkingView</h2>
+      </div>
+
+      <p>Vue état de la flotte par jour. Header fond <code>#1E40AF</code> (bleu marine fixe, non <code>pal.primary</code>).</p>
+
+      <h3>Props</h3>
+      <pre>pal, coopId, year, month, slots, vehicles, onBack()</pre>
+
+      <h3>État</h3>
+      <pre>selDate: '2026-06-10'   // date sélectionnée (initialisée en dur)</pre>
+
+      <h3>Header</h3>
+      <div class="card">
+        <div class="card-desc">
+          Bouton ← Planning, titre <strong>🅿️ État du parking</strong>, sous-titre mois+année<br>
+          3 KPI chips : Flotte totale · En service · Disponibles<br>
+          (calculés dynamiquement selon selDate)
+        </div>
+      </div>
+
+      <h3>Sélecteur de date</h3>
+      <p>Scroll horizontal, tous les jours du mois. Chaque bouton affiche le numéro + ratio <code>cnt/tot</code> (assignés/total). Sélectionné → fond <code>#1E40AF</code>. Week-end → couleur <code>#7C3AED</code>.</p>
+
+      <h3>Liste flotte</h3>
+      <p>Divisée en deux sections :</p>
+      <div class="grid-2">
+        <div class="card" style="border-color:#D1FAE5">
+          <div class="card-title" style="color:#059669">🚌 EN SERVICE</div>
+          <p class="card-desc">Fond <code>pal.surface</code>, border <code>#D1FAE5</code>. Affiche plaque, driver, places. Tags des missions : emoji créneau + horaires + destination (couleur destination).</p>
+        </div>
+        <div class="card">
+          <div class="card-title">🅿️ DISPONIBLES</div>
+          <p class="card-desc">Border dashed <code>pal.line</code>, texte muted. Juste plaque + driver + places.</p>
+        </div>
+      </div>
+
+      <h3>getVehAssignments(vId, date)</h3>
+      <p>Retourne la liste des missions d'un véhicule pour une date&nbsp;: <code>[{to, slot, dep, arr, status}]</code>.</p>
+    </section>
+
+    <!-- TEMPLATE MANAGER -->
+    <section id="comp-templates">
+      <div class="section-header">
+        <div class="section-icon" style="background:#059669">📋</div>
+        <h2>TemplateManager</h2>
+      </div>
+
+      <p>3 sous-vues gérées en interne : <code>'list' | 'detail' | 'form'</code>. Header fond <code>#059669</code> dans toutes les sous-vues.</p>
+
+      <h3>Props</h3>
+      <pre>pal, coopId, templates, setTemplates, slots, setSlots, vehicles, onBack()</pre>
+
+      <h3>État</h3>
+      <pre>view:       'list'   // sous-vue active
+selTplId:   null     // ID template sélectionné
+editTpl:    null     // template en édition (pour TemplateForm)
+applyYear:  2026     // année pour génération
+applyMonth: 6        // mois pour génération
+toast:      ''       // message succès (disparaît après 4 secondes)</pre>
+
+      <h3>Sous-vue : Liste</h3>
+      <div class="card">
+        <div class="card-desc">
+          Header : ← Planning · <strong>📋 Templates planning</strong> · sous-titre "Modèles de départs hebdomadaires"<br>
+          Bouton <strong>+ Nouveau</strong> en haut à droite → <code>setView('form')</code><br><br>
+          Toast éventuel (fond <code>#D1FAE5</code>, texte <code>#059669</code>)<br><br>
+          Carte template (clic → detail) : nom · routes badges (couleur destination) · compteur véhicules moyen/j<br>
+          Compteur = <code>∑ (weekdayCount + weekendCount)</code> sur tous les slots de toutes les routes
+        </div>
+      </div>
+
+      <h3>Sous-vue : Détail</h3>
+      <div class="card">
+        <div class="card-desc">
+          Header : ← Retour · nom template · bouton ✏ Modifier → <code>setView('form')</code><br><br>
+          <strong>Bloc "Générer le planning"</strong> :<br>
+          · Select mois + input année<br>
+          · Bouton ▶ <strong>Appliquer au mois</strong> (vert) → <code>applyTpl(selTpl)</code><br>
+          · Bouton ⟹ <strong>Répliquer M+1</strong> (cyan <code>#0891B2</code>) → <code>replicateToNext(selTpl)</code><br>
+          · Toast inline<br><br>
+          Routes affichées : badge route (couleur) · durée · créneaux (fond sm.bg, horaires, sem/w-e counts)<br><br>
+          Bouton 🗑 Supprimer (border rouge) → supprime template + retour liste
+        </div>
+      </div>
+
+      <h3>applyTpl(tpl)</h3>
+      <pre>// Génère le mois, remplace uniquement les slots existants avec même coopId + mois + templateId
+const gen = genSlotsFromTpl(tpl, applyYear, applyMonth);
+const pfx = `${applyYear}-${pad(applyMonth)}`;
+setSlots(prev => [
+  ...prev.filter(s => !(s.coopId === coopId && s.date.startsWith(pfx) && s.templateId === tpl.id)),
+  ...gen
+]);</pre>
+
+      <h3>replicateToNext(tpl)</h3>
+      <p>Même logique que <code>applyTpl</code> mais sur le mois suivant (gère décembre → janvier année+1).</p>
+
+      <h3>handleSaveForm(tpl)</h3>
+      <p>Update si <code>editTpl.id</code> existe, insert sinon. Navigue vers detail si update, liste si insert.</p>
+    </section>
+
+    <!-- TEMPLATE FORM -->
+    <section id="comp-tplform">
+      <div class="section-header">
+        <div class="section-icon" style="background:#059669">✏️</div>
+        <h2>TemplateForm</h2>
+      </div>
+
+      <p>Formulaire complet de création/édition de template. Header fond <code>#059669</code>.</p>
+
+      <h3>Props</h3>
+      <pre>pal, coopId, existing: PlanTemplate|null, onSave(tpl), onBack()</pre>
+
+      <h3>État</h3>
+      <pre>name:   string           // nom du template
+routes: RouteTemplate[]  // pré-initialisé avec existing?.routes ou 1 route par défaut</pre>
+
+      <h3>Mutations des routes</h3>
+      <p>Fonctions pures immutables : <code>addRoute</code>, <code>removeRoute(i)</code>, <code>updateRoute(i,k,v)</code>, <code>addRouteSlot(ri)</code>, <code>removeRouteSlot(ri,si)</code>, <code>updateRouteSlot(ri,si,k,v)</code>.</p>
+
+      <h3>Structure d'une route dans le formulaire</h3>
+      <div class="card">
+        <div class="card-desc">
+          Titre <em>Itinéraire N</em> · bouton ✕ Supprimer (si &gt;1 route)<br>
+          Selects DÉPART / DESTINATION (grid 2 colonnes)<br>
+          Input DURÉE TRAJET (minutes, step 30)<br><br>
+          <strong>Créneaux</strong> (plusieurs par route) :<br>
+          · 3 boutons slot (🌅/☀️/🌆), petit format<br>
+          · Input time, input weekdayCount, input weekendCount (grid 3 colonnes)<br>
+          · Bouton ✕ si &gt;1 créneau<br>
+          Bouton <em>"+ Ajouter un créneau"</em> (dashed)<br>
+        </div>
+      </div>
+
+      <h3>Validation et sauvegarde</h3>
+      <p>Bouton <em>"✓ Enregistrer le template"</em> — désactivé (fond gris <code>#9CA3AF</code>, cursor default) si <code>!name.trim()</code>. Actif → fond <code>#059669</code>. Crée l'id : <code>"tpl_" + Date.now()</code>.</p>
+    </section>
+
+    <!-- BUSINESS LOGIC -->
+    <section id="logic">
+      <div class="section-header">
+        <div class="section-icon" style="background:var(--warn)">⚡</div>
+        <h2>Logique métier</h2>
+      </div>
+
+      <h3>Génération de slots depuis un template</h3>
+      <ul class="steps">
+        <li><div class="step-n">1</div><span>Itérer tous les jours du mois (1 → last day)</span></li>
+        <li><div class="step-n">2</div><span>Pour chaque jour, déterminer week-end via <code>isWeekendP</code></span></li>
+        <li><div class="step-n">3</div><span>Pour chaque route × créneau, choisir <code>weekendCount</code> ou <code>weekdayCount</code></span></li>
+        <li><div class="step-n">4</div><span>Si count = 0 → skip. Sinon créer 1 DepartureSlot avec N vehicleSlots placeholder</span></li>
+        <li><div class="step-n">5</div><span><code>arrivalTime = addMinP(sc.time, route.durationMin)</code></span></li>
+        <li><div class="step-n">6</div><span>IDs uniques via séquence monotone <code>seq = Date.now()</code> incrémentée</span></li>
+      </ul>
+
+      <h3>Détection de conflit véhicule</h3>
+      <pre>// Dans VehicleAssignModal.getConflict(vId)
+const others = allSlots.filter(s =>
+  s.coopId === ds.coopId &&   // même coop
+  s.date === ds.date &&        // même jour
+  s.id !== ds.id &&            // pas le slot courant
+  s.vehicleSlots.some(vs => vs.vehicleId === vId)  // véhicule déjà assigné
+);
+for (const o of others) {
+  if (slotsOverlap(ds.departureTime, ds.arrivalTime, o.departureTime, o.arrivalTime))
+    return `${o.from.slice(0,3)}→${o.to} ${o.departureTime}`;
+}</pre>
+
+      <h3>Calcul d'occupation</h3>
+      <pre>// Dans DayDetailView
+const totalCap = ds.vehicleSlots.reduce((s, vs) => {
+  const v = vehicles.find(x => x.id === vs.vehicleId);
+  return s + (v ? v.seats : 0);
+}, 0);
+const sold = dayResas
+  .filter(r => ds.vehicleSlots.some(vs => vs.vehicleId === r.vehicleId))
+  .reduce((s, r) => s + (r.seats || 0), 0);
+const occupancyPct = totalCap > 0 ? Math.round(sold / totalCap * 100) : 0;</pre>
+      <p>Couleur de la barre : &gt;85% → <code>#EF4444</code>, &gt;60% → <code>#F59E0B</code>, sinon <code>pal.primary</code>.</p>
+
+      <h3>Conversion date réservation</h3>
+      <p>Les réservations ont le format <code>"DD/MM/YYYY"</code>. Conversion&nbsp;:</p>
+      <pre>const [d, m, y] = (r.date || '').split('/').map(Number);
+const iso = `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;</pre>
+
+      <h3>Mise à jour immutable des slots</h3>
+      <pre>// Assigner un véhicule
+onUpdateSlots(prev => prev.map(ds => {
+  if (ds.id !== dsId) return ds;
+  const vSlots = ds.vehicleSlots.map((v, i) =>
+    i === vsIndex
+      ? { ...v, vehicleId, status: vehicleId ? 'planned' : 'placeholder' }
+      : v
+  );
+  return { ...ds, vehicleSlots: vSlots };
+}));</pre>
+    </section>
+
+    <!-- NAVIGATION -->
+    <section id="navigation">
+      <div class="section-header">
+        <div class="section-icon" style="background:var(--muted)">🔄</div>
+        <h2>Navigation et état</h2>
+      </div>
+
+      <h3>Flux de navigation complet</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>De</th><th>Action</th><th>Vers</th></tr></thead>
+          <tbody>
+            <tr><td>Calendrier</td><td>Clic cellule jour</td><td>DayDetail (<code>setSelDate + view='day'</code>)</td></tr>
+            <tr><td>DayDetail</td><td>Bouton ← Calendrier</td><td>Calendrier (<code>setView('calendar')</code>)</td></tr>
+            <tr><td>Calendrier</td><td>Bouton 🅿️ Parking</td><td>ParkingView</td></tr>
+            <tr><td>ParkingView</td><td>Bouton ← Planning</td><td>Calendrier</td></tr>
+            <tr><td>Calendrier</td><td>Bouton 📋 Templates</td><td>TemplateManager (list)</td></tr>
+            <tr><td>Template list</td><td>← Planning</td><td>Calendrier</td></tr>
+            <tr><td>Template list</td><td>Clic carte</td><td>Template detail</td></tr>
+            <tr><td>Template detail</td><td>← Retour</td><td>Template list</td></tr>
+            <tr><td>Template detail</td><td>✏ Modifier</td><td>TemplateForm (edit)</td></tr>
+            <tr><td>TemplateForm</td><td>← Retour</td><td>Template detail (si edit) / list (si new)</td></tr>
+            <tr><td>TemplateForm</td><td>✓ Enregistrer</td><td>Template detail (si edit) / list (si new)</td></tr>
+            <tr><td>Template list</td><td>+ Nouveau</td><td>TemplateForm (create)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>État partagé (remonté dans le parent)</h3>
+      <div class="card">
+        <div class="card-desc">
+          <code>planningSlots</code> / <code>setPlanningSlots</code> — source de vérité unique pour tous les DepartureSlots<br>
+          <code>planTemplates</code> / <code>setPlanTemplates</code> — source de vérité pour les templates<br><br>
+          Ces états sont initialisés dans le composant parent (screens-staff-coop.jsx ou équivalent) avec <code>SEED_PLAN_SLOTS</code> et <code>SEED_PLAN_TEMPLATES</code>. Toutes les mutations passent par des setters fonctionnels.
+        </div>
+      </div>
+    </section>
+
+    <!-- INTEGRATION -->
+    <section id="integration">
+      <div class="section-header">
+        <div class="section-icon" style="background:var(--accent2)">🔌</div>
+        <h2>Intégration globale</h2>
+      </div>
+
+      <h3>Dépendances globales requises</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Global</th><th>Utilisé pour</th></tr></thead>
+          <tbody>
+            <tr><td><code>React</code></td><td>useState, useMemo — via CDN Babel standalone</td></tr>
+            <tr><td><code>TYPE</code></td><td>Objet <code>{display: '...', ui: '...'}</code> — typographies, utilisé dans tous les styles inline</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Exports globaux</h3>
+      <pre>window.SEED_PLAN_TEMPLATES = SEED_PLAN_TEMPLATES;
+window.SEED_PLAN_SLOTS     = SEED_PLAN_SLOTS;</pre>
+      <p>Le composant parent les lit pour initialiser son état React.</p>
+
+      <h3>Exemple d'intégration dans le parent</h3>
+      <pre>const [planningSlots, setPlanningSlots] = useState(window.SEED_PLAN_SLOTS || []);
+const [planTemplates, setPlanTemplates] = useState(window.SEED_PLAN_TEMPLATES || []);
+
+// Rendu
+&lt;CoopPlanning
+  pal={pal}
+  t={t} lang={lang}
+  currentUser={currentUser}
+  vehicles={vehicles}
+  reservations={reservations}
+  planningSlots={planningSlots}
+  setPlanningSlots={setPlanningSlots}
+  planTemplates={planTemplates}
+  setPlanTemplates={setPlanTemplates}
+/&gt;</pre>
+
+      <h3>Accès coopId</h3>
+      <p><code>coopId = currentUser?.coopId || 'sonatra'</code> — fallback sur 'sonatra' si pas d'utilisateur connecté.</p>
+
+      <h3>Filtrage des véhicules</h3>
+      <p><code>myVeh = vehicles.filter(v => v.coopId === coopId)</code> — effectué dans CoopPlanning, les sous-composants reçoivent déjà la flotte filtrée.</p>
+    </section>
+
+  </main>
+</div>
+
+</body></html>
