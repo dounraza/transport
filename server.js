@@ -776,4 +776,11 @@ app.delete('/api/:className/:id', requireAuth, requireAdmin, async (req, res) =>
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 app.use(express.static(path.join(currentDir, 'dist')));
 app.use((req, res) => res.sendFile(path.join(currentDir, 'dist', 'index.html')));
-app.listen(port, () => console.log(`Coop Taxi-Brousse: http://localhost:${port}`));
+// Vercel importe l'application comme une fonction serverless. En local, on
+// conserve le serveur HTTP classique utilisé par `npm start` et le script de
+// développement.
+export default app;
+
+if (!process.env.VERCEL) {
+  app.listen(port, () => console.log(`Coop Taxi-Brousse: http://localhost:${port}`));
+}
