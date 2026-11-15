@@ -310,6 +310,27 @@ app.get('/api/dashboard/quitus', requireAuth, async (req, res) => {
   res.json({ results: addDestinationCoordinates(results) });
 });
 
+app.get('/api/cooperative/quitus', requireAuth, async (req, res) => {
+  const cooperativeId = await cooperativeIdForUser(req);
+  if (!cooperativeId) return res.status(403).json({ error: 'Aucune coopérative n’est liée à cet utilisateur.' });
+  const cooperative = await parseRequest(`classes/CppCooperative/${encodeURIComponent(cooperativeId)}`);
+  if (cooperative.error) return res.status(cooperative.code || 502).json(cooperative);
+  const vehicles = await parseRequest(`classes/CppTransportVehicule?where=${cooperativeWhere(cooperativeId)}&limit=1000`);
+  if (vehicles.error) return res.status(vehicles.code || 502).json(vehicles);
+  const vehicleNumbers = new Set((vehicles.results || []).flatMap((vehicle) => [vehicle.numero, vehicle.numeroVehicule, vehicle.immatriculation]).filter(Boolean).map((value) => String(value).trim().toLowerCase()));
+  const result = await parseRequest('classes/CppQuitus?include=destination,koperativa,chauffeur,ligne,ligneVariance,type&limit=1000&order=-createdAt');
+  if (result.error) return res.status(result.code || 502).json(result);
+  const cooperativeName = String(cooperative.name || cooperative.nom || '').trim().toLowerCase();
+  const rows = (result.results || []).filter((row) => {
+    const value = row.koperativa || row.cooperative || row['coopérative'] || row.cooperativeId;
+    const rowId = typeof value === 'object' ? value.objectId || value.id : value;
+    const rowName = typeof value === 'object' ? value.name || value.nom : value;
+    const vehicle = row.vehiculeNumero || row.vehicleId || row.vehicule || row.matricule || row.immatriculation || row.guest;
+    return String(rowId || '') === String(cooperativeId) || (cooperativeName && String(rowName || '').trim().toLowerCase() === cooperativeName) || vehicleNumbers.has(String(vehicle || '').trim().toLowerCase());
+  });
+  res.json({ results: addDestinationCoordinates(rows) });
+});
+
 app.get('/api/manifold', requireAuth, async (req, res) => {
   const cooperativeId = await cooperativeIdForUser(req);
   let cooperativeName = '';
@@ -394,7 +415,7 @@ app.get('/api/dashboard/occupancy', requireAuth, async (req, res) => {
     }
     groups.set(key, group);
   }
-  const results = [...groups.values()].map((group) => { const occupied = group.seats.size; const capacity = 18; return { vehicle: group.vehicle, day: group.day, occupied, capacity, rate: Math.min(100, Math.round((occupied / capacity) * 100)) }; });
+  const results = [...groups.values()].map((group) => { const occupied = group.seats.size; const capacity = Math.max(18, occupied); return { vehicle: group.vehicle, day: group.day, occupied, capacity, rate: Math.min(100, Math.round((occupied / capacity) * 100)) }; });
   res.json({ results, sourceCount: holds.length, matchedCount: results.length, date: requestedDay, scope: admin ? 'all' : (cooperativeId || null) });
 });
 

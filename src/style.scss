@@ -440,13 +440,17 @@ main:has(.vehicle-create-open) .panel-heading > button { display: none !importan
 .cooperative-upcoming-chart .chart-legend { display: flex; gap: 16px; margin-bottom: 10px; color: #777; font-size: 11px; }
 .cooperative-upcoming-chart .chart-legend span { display: inline-flex; align-items: center; gap: 5px; }
 .cooperative-upcoming-chart .chart-legend i { display: inline-block; width: 9px; height: 9px; border-radius: 3px; }
+.cooperative-chart-tooltip { min-height: 30px; margin: 6px 0 4px; padding: 7px 10px; border-radius: 6px; color: #fff; background: #292929; font-size: 11px; }
 .legend-departures { background: #d71920; }
 .legend-travelers { background: #292929; }
 .cooperative-hour-chart { display: flex; align-items: flex-end; gap: 3px; height: 170px; padding-top: 12px; border-bottom: 1px solid var(--coop-border); }
+.cooperative-hour-chart-wrap { width: 100%; overflow-x: auto; }
+.cooperative-hour-chart-wrap .cooperative-hour-chart { min-width: 720px; }
 .cooperative-hour-column { display: flex; align-items: center; flex: 1; flex-direction: column; justify-content: flex-end; height: 100%; gap: 5px; }
 .cooperative-hour-bars { display: flex; align-items: flex-end; justify-content: center; gap: 2px; width: 100%; height: 140px; }
 .cooperative-hour-bars i { display: block; width: 45%; min-height: 0; border-radius: 3px 3px 0 0; }
 .cooperative-hour-bars .departure-bar { background: #d71920; }
+.cooperative-hour-bars .departure-bar:only-child { width: 70%; }
 .cooperative-hour-bars .traveler-bar { background: #292929; }
 .cooperative-hour-column small { color: #999; font-size: 8px; }
 .cooperative-metrics { align-items: stretch; }
