@@ -436,6 +436,19 @@ main:has(.vehicle-create-open) .panel-heading > button { display: none !importan
 .cooperative-line-row .line-icon { display: grid; place-items: center; width: 36px; height: 36px; flex: 0 0 36px; border-radius: 11px; color: var(--coop-red); background: var(--coop-soft); }
 .cooperative-plan-row > strong { min-width: 92px; color: var(--coop-red); font-variant-numeric: tabular-nums; }
 .cooperative-dashboard-footer { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.cooperative-upcoming-chart { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--coop-border); }
+.cooperative-upcoming-chart .chart-legend { display: flex; gap: 16px; margin-bottom: 10px; color: #777; font-size: 11px; }
+.cooperative-upcoming-chart .chart-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.cooperative-upcoming-chart .chart-legend i { display: inline-block; width: 9px; height: 9px; border-radius: 3px; }
+.legend-departures { background: #d71920; }
+.legend-travelers { background: #292929; }
+.cooperative-hour-chart { display: flex; align-items: flex-end; gap: 3px; height: 170px; padding-top: 12px; border-bottom: 1px solid var(--coop-border); }
+.cooperative-hour-column { display: flex; align-items: center; flex: 1; flex-direction: column; justify-content: flex-end; height: 100%; gap: 5px; }
+.cooperative-hour-bars { display: flex; align-items: flex-end; justify-content: center; gap: 2px; width: 100%; height: 140px; }
+.cooperative-hour-bars i { display: block; width: 45%; min-height: 0; border-radius: 3px 3px 0 0; }
+.cooperative-hour-bars .departure-bar { background: #d71920; }
+.cooperative-hour-bars .traveler-bar { background: #292929; }
+.cooperative-hour-column small { color: #999; font-size: 8px; }
 .cooperative-metrics { align-items: stretch; }
 .cooperative-metrics > .metric-card:nth-of-type(2) { order: 3; }
 .cooperative-metrics > .metric-card:nth-of-type(3) { order: 2; }
