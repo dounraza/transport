@@ -388,7 +388,10 @@ app.get('/api/dashboard/occupancy', requireAuth, async (req, res) => {
   const holds = [];
   let skip = 0;
   const limit = 1000;
-  const dayWhere = encodeURIComponent(JSON.stringify({ bucket: { $regex: `\\|${requestedDay}\\|` } }));
+  const dayStart = new Date(`${requestedDay}T00:00:00.000Z`);
+  const dayEnd = new Date(dayStart);
+  dayEnd.setUTCDate(dayEnd.getUTCDate() + 1);
+  const dayWhere = encodeURIComponent(JSON.stringify({ bucket: { $regex: `\\|${requestedDay}\\|` }, creationDate: { $gte: { __type: 'Date', iso: dayStart.toISOString() }, $lt: { __type: 'Date', iso: dayEnd.toISOString() } } }));
   while (true) {
     // On ne filtre pas par company : on demande directement à Parse les
     // buckets de la journée afin de ne pas parcourir tout l'historique.
@@ -402,13 +405,16 @@ app.get('/api/dashboard/occupancy', requireAuth, async (req, res) => {
   for (const hold of holds) {
     const bucket = String(hold.bucket || '');
     const parts = bucket.split('|');
-    const vehicle = String(parts[2] || '').trim();
-    const day = String(parts[1] || '').trim();
-    if (day !== requestedDay) continue;
+    const vehicle = String(hold.vehiculeNumero || hold.vehicleId || hold.vehicule || hold.vehicle || hold.guest || parts[2] || '').trim();
+    const day = String(parts.find((part) => part.trim() === requestedDay) || hold.date || hold.departureDate || hold.dateDeparture || parts[1] || '').slice(0, 10).trim();
+    const creationDate = hold.creationDate?.iso || hold.creationDate;
+    const creationDay = creationDate ? new Date(creationDate).toISOString().slice(0, 10) : '';
+    if (day !== requestedDay || creationDay !== requestedDay) continue;
     const key = `${vehicle.toLocaleLowerCase('fr-FR')}|${day}`;
     if (!vehicle || !day || (!admin && cooperativeId && !vehicleMap.has(vehicle.toLocaleLowerCase('fr-FR')))) continue;
     const group = groups.get(key) || { vehicle, day, seats: new Set() };
-    const seatValues = Array.isArray(hold.seat) ? hold.seat : [hold.seat];
+    const rawSeats = hold.seat ?? hold.seats ?? hold.place ?? hold.places ?? hold.seatNumber;
+    const seatValues = Array.isArray(rawSeats) ? rawSeats : [rawSeats];
     for (const seat of seatValues) {
       const seatKey = seat && typeof seat === 'object' ? seat.objectId || seat.number || seat.label || JSON.stringify(seat) : String(seat ?? '').trim();
       if (seatKey) group.seats.add(String(seatKey));
@@ -538,11 +544,24 @@ app.get('/api/cooperative/reservation-stats', requireAuth, async (req, res) => {
   const company = { __type: 'Pointer', className: 'Company', objectId: companyId }; const where = encodeURIComponent(JSON.stringify({ company, createdAt: { $gte: { __type: 'Date', iso: monthStart.toISOString() }, $lte: { __type: 'Date', iso: now.toISOString() } } }));
   const result = await payParseRequest(`classes/CompanyReservation?where=${where}&include=catalog,transaction,status&limit=1000&order=-createdAt`);
   if (result.error) return res.status(result.code || 502).json({ error: result.error });
-  const reservations = result.results || []; const statusIds = [...new Set(reservations.flatMap((row) => [row.status?.objectId, row.transaction?.status?.objectId]).filter(Boolean))]; const statusNames = {};
+  let reservations = result.results || [];
+  let cooperativeId = null;
+  if (!isAdmin(req)) {
+    cooperativeId = await cooperativeIdForUser(req);
+    if (!cooperativeId) return res.status(403).json({ error: 'Aucune coopérative n’est liée à cet utilisateur.' });
+    const cooperative = await parseRequest(`classes/CppCooperative/${encodeURIComponent(cooperativeId)}`);
+    if (cooperative.error) return res.status(cooperative.code || 502).json(cooperative);
+    const cooperativeName = String(cooperative.name || cooperative.nom || '').trim().toLowerCase();
+    reservations = reservations.filter((row) => {
+      const catalogName = String(row.catalog?.name || '').trim().toLowerCase().replace(/^\d+/, '');
+      return catalogName === cooperativeName || catalogName.startsWith(`${cooperativeName}-`) || catalogName.startsWith(`${cooperativeName} `);
+    });
+  }
+  const statusIds = [...new Set(reservations.flatMap((row) => [row.status?.objectId, row.transaction?.status?.objectId]).filter(Boolean))]; const statusNames = {};
   await Promise.all(statusIds.map(async (id) => { const status = await payParseRequest(`classes/Status/${encodeURIComponent(id)}`); if (!status.error) statusNames[id] = String(status.name || status.label || status.code || '').toLowerCase(); }));
   const classify = (row) => { const reservationStatus = statusNames[row.status?.objectId] || String(row.status?.name || '').toLowerCase(); const transactionStatus = statusNames[row.transaction?.status?.objectId] || String(row.transaction?.status?.name || '').toLowerCase(); const pending = reservationStatus.includes('attente') || reservationStatus.includes('pending'); const confirmed = !pending && (reservationStatus.includes('reserv') || reservationStatus.includes('confirm') || reservationStatus.includes('valid')); const paid = !transactionStatus.includes('attente') && !transactionStatus.includes('pending') && (transactionStatus.includes('pay') || transactionStatus.includes('regl') || transactionStatus.includes('paid') || Number(row.transaction?.amount_net || 0) > 0); return { pending, confirmed, paid }; };
   const build = (start) => reservations.filter((row) => new Date(row.createdAt || 0) >= start).reduce((stats, row) => { const state = classify(row); const amountGross = Number(row.transaction?.amount_initial || 0); const amountNet = Number(row.transaction?.amount_net || 0); stats.reservations += 1; stats.confirmed += state.confirmed ? 1 : 0; stats.pending += state.pending ? 1 : 0; stats.paid += state.paid ? 1 : 0; stats.gross += amountGross; stats.net += amountNet; return stats; }, { reservations: 0, confirmed: 0, pending: 0, paid: 0, gross: 0, net: 0 });
-  const quitusWhere = encodeURIComponent(JSON.stringify({ createdAt: { $gte: { __type: 'Date', iso: dayStart.toISOString() }, $lte: { __type: 'Date', iso: now.toISOString() } } })); const quitus = await parseRequest(`classes/CppQuitus?where=${quitusWhere}&limit=1000`); const activeVehicles = new Set((quitus.results || []).map((row) => String(row.guest || row.vehiculeNumero || '').trim().toLowerCase()).filter(Boolean)).size;
+  const quitus = await parseRequest('classes/CppQuitus?include=koperativa&limit=1000&order=-createdAt'); const todayKey = now.toISOString().slice(0, 10); const quitusDay = (row) => { const raw = String(row.departureDate || row.dateDeparture || row.dateDepart || row.date || row.createdAt || '').trim(); const french = raw.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})/); return french ? `${french[3]}-${String(french[2]).padStart(2, '0')}-${String(french[1]).padStart(2, '0')}` : raw.slice(0, 10); }; let activeQuitus = (quitus.results || []).filter((row) => quitusDay(row) === todayKey); if (!isAdmin(req) && cooperativeId) { const cooperativeVehicles = await parseRequest(`classes/CppTransportVehicule?where=${cooperativeWhere(cooperativeId)}&limit=1000`); if (cooperativeVehicles.error) return res.status(cooperativeVehicles.code || 502).json(cooperativeVehicles); const allowedVehicles = new Set((cooperativeVehicles.results || []).flatMap((vehicle) => [vehicle.numero, vehicle.numeroVehicule, vehicle.immatriculation]).filter(Boolean).map((value) => String(value).trim().toLowerCase())); activeQuitus = activeQuitus.filter((row) => allowedVehicles.has(String(row.guest || row.vehiculeNumero || row.vehicleId || row.vehicule || '').trim().toLowerCase())); } const activeVehicles = new Set(activeQuitus.map((row) => String(row.guest || row.vehiculeNumero || row.vehicleId || row.vehicule || '').trim().toLowerCase()).filter(Boolean)).size;
   const transactionWhere = encodeURIComponent(JSON.stringify({ month: now.getUTCMonth() + 1, year: now.getUTCFullYear() })); const transactions = await payParseRequest(`classes/Transaction?where=${transactionWhere}&limit=1000`); const transactionRows = transactions.results || []; const transactionNet = (start) => transactionRows.filter((row) => new Date(row.createdAt || 0) >= start).reduce((sum, row) => sum + Number(row.amount_net || 0), 0);
   const todayStats = build(dayStart); const weekStats = build(weekStart); const monthStats = build(monthStart); todayStats.activeVehicles = activeVehicles; todayStats.net = transactionNet(dayStart); weekStats.net = transactionNet(weekStart); monthStats.net = transactionNet(monthStart);
   res.json({ companyId, today: todayStats, week: weekStats, month: monthStats, source: 'CompanyReservation + CppQuitus + Transaction' });

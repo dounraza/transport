@@ -434,6 +434,16 @@ main:has(.vehicle-create-open) .panel-heading > button { display: none !importan
 .cooperative-line-row > div, .cooperative-plan-row > div { display: grid; gap: 4px; min-width: 0; }
 .cooperative-line-row small, .cooperative-plan-row small { color: #71807b; }
 .cooperative-line-row .line-icon { display: grid; place-items: center; width: 36px; height: 36px; flex: 0 0 36px; border-radius: 11px; color: var(--coop-red); background: var(--coop-soft); }
+.cooperative-line-row .line-map-button { margin-left: auto; display: grid; place-items: center; width: 32px; height: 32px; flex: 0 0 32px; border: 1px solid #d7e4dd; border-radius: 9px; color: var(--coop-red); background: #fff; cursor: pointer; font-size: 18px; }
+.cooperative-line-row .line-map-button:hover { color: #fff; background: var(--coop-red); border-color: var(--coop-red); }
+.route-modal-backdrop { position: fixed; inset: 0; z-index: 1000; display: grid; place-items: center; padding: 24px; background: rgba(19, 31, 26, .58); }
+.route-modal { width: min(760px, 100%); max-height: 90vh; overflow: auto; padding: 22px; border-radius: 18px; background: #fff; box-shadow: 0 24px 70px rgba(0, 0, 0, .25); }
+.modal-close { border: 0; color: #5c6b65; background: transparent; cursor: pointer; font-size: 28px; line-height: 1; }
+.cooperative-route-map { min-height: 390px; overflow: hidden; border-radius: 14px; background: #dbe8d4; }
+.route-map-empty { display: grid; min-height: 220px; place-items: center; padding: 24px; border-radius: 14px; color: #71807b; background: #f4f8f5; text-align: center; }
+.route-details { display: flex; flex-wrap: wrap; gap: 18px; padding-top: 14px; color: #53625c; }
+.route-details span { display: grid; gap: 3px; }
+.route-details strong { color: #17221e; font-size: 12px; }
 .cooperative-plan-row > strong { min-width: 92px; color: var(--coop-red); font-variant-numeric: tabular-nums; }
 .cooperative-dashboard-footer { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
 .cooperative-upcoming-chart { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--coop-border); }
@@ -505,6 +515,10 @@ main:has(.vehicle-create-open) .panel-heading > button { display: none !importan
 .manifold-detail-grid strong { color: #111827; }
 @media (max-width: 560px) { .manifold-detail-grid { grid-template-columns: 1fr; } }
 .occupancy-panel { margin-top: 12px; overflow: hidden; background: linear-gradient(135deg, #fff 0%, #fafafa 100%); }
+.occupancy-card > div:first-child { position: relative; }
+.occupancy-status { display: inline-block; margin-left: 8px; padding: 3px 7px; border-radius: 999px; font-size: 9px; font-weight: 700; }
+.occupancy-status.on-route { color: #166534; background: #dcfce7; }
+.occupancy-status.waiting { color: #92400e; background: #fef3c7; }
 .occupancy-panel .panel-heading { align-items: center; margin-bottom: 12px; }
 .occupancy-search { display: flex; align-items: end; gap: 12px; margin: -2px 0 14px; padding: 10px 12px; border: 1px solid #e3e5e8; border-radius: 10px; background: #f8f9fa; }
 .occupancy-search label { display: grid; gap: 5px; width: min(310px, 100%); color: #525866; font-size: 12px; font-weight: 700; }
