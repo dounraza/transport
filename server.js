@@ -661,10 +661,12 @@ app.post('/api/cooperative/upload', requireAuth, async (req, res) => {
 });
 
 app.get('/api/admin/vehicules', requireAuth, async (req, res) => { const cooperativeId = await cooperativeIdForUser(req); if (!isAdmin(req) && !cooperativeId) return res.status(403).json({ error: 'Aucune coopérative n’est liée à cet utilisateur.' }); const criteria = { type: 'TAXIBROUSSE', ...(cooperativeId ? { cooperative: { __type: 'Pointer', className: 'CppCooperative', objectId: cooperativeId } } : {}) }; const where = encodeURIComponent(JSON.stringify(criteria)); const transport = await parseRequest(`classes/CppTransportVehicule?where=${where}&include=cooperative,chauffeur,ligne&limit=1000&order=numero`); const unique = new Map(); for (const vehicle of transport.results || []) { const number = String(vehicle.numero || vehicle.numeroVehicule || '').trim().toLowerCase(); const key = number || vehicle.objectId; if (!unique.has(key)) unique.set(key, vehicle); } res.json({ results: [...unique.values()] }); });
-app.post('/api/admin/vehicules', requireAuth, requireAdmin, async (req, res) => {
+app.post('/api/admin/vehicules', requireAuth, async (req, res) => {
   const body = { numero: String(req.body.numero || '').trim(), modele: String(req.body.modele || '').trim(), placeMax: Number(req.body.placeMax || req.body.capacite || 0), statut: String(req.body.statut || 'Disponible'), type: 'TAXIBROUSSE' };
   if (req.body.chauffeur) body.chauffeur = { __type: 'Pointer', className: 'CppChauffeur', objectId: String(req.body.chauffeur) };
-  const cooperativeId = req.body.cooperative || req.body.proprietaire;
+  const userCooperativeId = await cooperativeIdForUser(req);
+  if (!isAdmin(req) && !userCooperativeId) return res.status(403).json({ error: 'Aucune coopérative n’est liée à cet utilisateur.' });
+  const cooperativeId = isAdmin(req) ? (req.body.cooperative || req.body.proprietaire) : userCooperativeId;
   if (cooperativeId) body.cooperative = { __type: 'Pointer', className: 'CppCooperative', objectId: String(cooperativeId) };
   if (req.body.ligne) body.ligne = { __type: 'Pointer', className: 'CppLigneVariance', objectId: String(req.body.ligne) };
   if (req.body.photoUrl) body.photoUrl = String(req.body.photoUrl);
