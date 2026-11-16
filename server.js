@@ -231,17 +231,13 @@ app.get('/api/admin/users', requireAuth, requireAdmin, async (req, res) => res.j
 app.post('/api/admin/users', requireAuth, requireAdmin, async (req, res) => {
   const nameSource = String(req.body.fullName || req.body.username || 'user').trim();
   const username = String(req.body.username || nameSource).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 24) || 'user';
-  const role = String(req.body.role || 'Membre');
+  const role = 'Membre Cpp';
+  const type = String(req.body.type || '').trim().toLowerCase();
   const password = sixDigitPassword();
   const fullName = String(req.body.fullName || username).trim();
-  const allowedRoles = ['ATT', 'CPCTRV', 'Admin', 'Membre Cpp', 'Cooperative', 'Membre_Cooperative'];
-  if (!username || !password || !allowedRoles.includes(role)) return res.status(400).json({ error: 'Nom d’utilisateur, mot de passe et rôle valides obligatoires.' });
-  if (role === 'Cooperative') {
-    if (!req.body.cooperativeId) return res.status(400).json({ error: 'Une coopérative doit être sélectionnée pour ce rôle.' });
-    const account = await createCooperativeAccount(String(req.body.cooperativeId), { username, password, email: req.body.email, fullName });
-    return res.status(account.error ? account.code || 502 : 201).json(account.error ? account : { ...account, credentials: { username, password } });
-  }
-  const result = await parseRequest('users', { method: 'POST', body: JSON.stringify({ username, password, fullName, role, actif: true }) });
+  if (!['gare_agent', 'pointeur', 'controleur'].includes(type)) return res.status(400).json({ error: 'Le type doit être gare_agent, pointeur ou controleur.' });
+  if (!username || !password) return res.status(400).json({ error: 'Nom d’utilisateur et mot de passe valides obligatoires.' });
+  const result = await parseRequest('users', { method: 'POST', body: JSON.stringify({ username, password, fullName, role, ...(type ? { type } : {}), actif: true }) });
   res.status(result.error ? result.code || 502 : 201).json(result.error ? result : { ...result, credentials: { username, password } });
 });
 
@@ -292,7 +288,8 @@ app.get('/api/cooperative/members', requireAuth, async (req, res) => {
 
 app.post('/api/cooperative/members', requireAuth, async (req, res) => {
   const cooperativeId = await cooperativeIdForUser(req); if (!cooperativeId) return res.status(403).json({ error: 'Aucune coopérative n’est liée à cet utilisateur.' }); const username = String(req.body.username || '').trim(); const password = String(req.body.password || '1234'); if (!username || password.length < 4) return res.status(400).json({ error: 'Nom d’utilisateur et mot de passe valides obligatoires.' });
-  const user = await parseRequest('users', { method: 'POST', body: JSON.stringify({ username, password, email: String(req.body.email || '').trim(), fullName: String(req.body.fullName || username).trim(), role: 'Membre Cpp', actif: true, cooperativeId }) }); if (user.error) return res.status(user.code || 502).json(user);
+  const type = String(req.body.type || '').trim().toLowerCase(); if (!['guichetier', 'baggagiste'].includes(type)) return res.status(400).json({ error: 'Le type doit être guichetier ou baggagiste.' });
+  const user = await parseRequest('users', { method: 'POST', body: JSON.stringify({ username, password, email: String(req.body.email || '').trim(), fullName: String(req.body.fullName || username).trim(), role: 'Cooperative', type, actif: true, cooperativeId }) }); if (user.error) return res.status(user.code || 502).json(user);
   const link = await parseRequest('classes/CppUserCooperative', { method: 'POST', body: JSON.stringify({ cooperative: { __type: 'Pointer', className: 'CppCooperative', objectId: cooperativeId }, user: { __type: 'Pointer', className: '_User', objectId: user.objectId } }) }); if (link.error) return res.status(link.code || 502).json(link); res.status(201).json({ user, link, credentials: { username, password } });
 });
 
