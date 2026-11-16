@@ -510,8 +510,8 @@ app.post('/api/ligne/cooperatives/import', requireAuth, requireAdmin, async (req
 });
 
 app.get('/api/cooperatives-list', requireAuth, async (req, res) => res.json(await parseRequest('classes/CppCooperative?limit=1000&order=name')));
-app.get('/api/proprietaires', requireAuth, requireAdmin, async (req, res) => res.json(await parseRequest('classes/CppProprietaire?include=user_id&limit=1000&order=nom')));
-app.post('/api/proprietaires', requireAuth, requireAdmin, async (req, res) => {
+app.get('/api/proprietaires', requireAuth, async (req, res) => res.json(await parseRequest('classes/CppProprietaire?include=user_id&limit=1000&order=nom')));
+app.post('/api/proprietaires', requireAuth, async (req, res) => {
   const nom = String(req.body.nom || '').trim(); const prenom = String(req.body.prenom || '').trim(); const email = String(req.body.email || '').trim().toLowerCase(); const password = String(req.body.password || '');
   if (!nom || !prenom || !email || password.length < 4) return res.status(400).json({ error: 'Nom, prénom, email et mot de passe (4 caractères minimum) sont obligatoires.' });
   const username = String(req.body.username || email.split('@')[0] || `${prenom}.${nom}`).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 24) || `proprietaire_${Date.now()}`;
