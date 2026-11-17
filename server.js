@@ -723,13 +723,13 @@ app.put('/api/admin/documents/:type/:id', requireAuth, async (req, res) => {
 });
 app.get('/api/controle-papiers', requireAuth, async (req, res) => {
   const cooperativeId = await cooperativeIdForUser(req); if (!isAdmin(req) && !cooperativeId) return res.status(403).json({ error: 'Aucune coopérative n’est liée à cet utilisateur.' });
-  const where = encodeURIComponent(JSON.stringify({ type: 'TAXIBROUSSE', ...(cooperativeId ? { cooperative: { __type: 'Pointer', className: 'CppCooperative', objectId: cooperativeId } } : {}) }));
+  const role = normalizedRole(req.user?.role); const vehicleCriteria = role === 'cooperative' ? { ...(cooperativeId ? { cooperative: { __type: 'Pointer', className: 'CppCooperative', objectId: cooperativeId } } : {}) } : { type: 'TAXIBROUSSE', ...(cooperativeId ? { cooperative: { __type: 'Pointer', className: 'CppCooperative', objectId: cooperativeId } } : {}) }; const where = encodeURIComponent(JSON.stringify(vehicleCriteria));
   const [transport, drivers] = await Promise.all([parseRequest(`classes/CppTransportVehicule?where=${where}&limit=1000&order=numero`), parseRequest('classes/CppChauffeur?limit=1000&order=nom')]);
   const vehicleRows = (transport.results || []).map((row) => { const numero = row.numero || row.numeroVehicule || row.vehicleNumber || ''; return { ...row, numero, documentSubject: numero || 'Véhicule', documentKind: 'Véhicule', documentType: 'vehicle' }; });
   const driverRows = (drivers.results || []).map((row) => ({ ...row, documentSubject: `${row.nom || ''} ${row.prenom || ''}`.trim() || 'Chauffeur', documentKind: 'Chauffeur' }));
   res.json({ results: [...vehicleRows, ...driverRows] });
 });
-app.get('/api/admin/chauffeurs', requireAuth, requireAdmin, async (req, res) => res.json(await parseRequest('classes/CppChauffeur?limit=1000&order=nom')));
+app.get('/api/admin/chauffeurs', requireAuth, async (req, res) => res.json(await parseRequest('classes/CppChauffeur?limit=1000&order=nom')));
 app.post('/api/admin/chauffeurs', requireAuth, requireAdmin, async (req, res) => {
   const numeroPermis = String(req.body.numeroPermis || req.body.numPermis || req.body.permisNumero || '').trim();
   const body = { nom: String(req.body.nom || '').trim(), prenom: String(req.body.prenom || '').trim(), telephone: String(req.body.telephone || '').trim(), adresse: String(req.body.adresse || '').trim(), categoriePermis: String(req.body.categoriePermis || '').trim(), numeroPermis, numPermis: numeroPermis, permisNumero: numeroPermis, statut: 'Actif' };
